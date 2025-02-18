@@ -141,15 +141,15 @@ class CryptoEpochRewards {
     }
 
     .card {
-      background-color: #fff;
+      background-color: #1D1D1B;
       border-radius: 12px;
-      box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+      box-shadow: rgba(0, 0, 0, 0.25) 0px 25px 50px -12px;
       padding: 40px;
       text-align: center;
     }
 
     .card-title {
-      color: #2c3e50;
+      color: #f1f1f1;
       margin-bottom: 20px;
       font-size: 2.1rem;
         font-weight: bold; 
@@ -157,11 +157,10 @@ class CryptoEpochRewards {
     }
 
     .result-card {
-      background-color: #8f48d2;
+      background-color: #4158D0; background-image: linear-gradient(217deg, #4158D0 0%, #C850C0 46%, #1c0511 100%);
       padding: 20px;
       border-radius: 8px;
       margin-bottom: 25px;
-      border: 1px solid #cce5ff;
     }
 
     .result-card p {
@@ -192,7 +191,7 @@ class CryptoEpochRewards {
     label {
       display: block;
       margin-bottom: 8px;
-      color: #333;
+      color: #f1f1f1;
       font-weight: 600;
     }
 
@@ -202,6 +201,7 @@ class CryptoEpochRewards {
       border: 1px solid #ced4da;
       border-radius: 6px;
       font-size: 1rem;
+      background-color: #D9D3C1;
       transition: border-color 0.2s ease-in-out;
     }
 
