@@ -6,11 +6,11 @@ class CryptoEpochRewards {
   calculateRewardPeso(
     stakedAmountPeso: number,
     stakeDuration: { start: Date; finish: Date },
-    annualRewardRate: number,
+    monthlyRewardRate: number,
     marketCapAmount: number,
     profitShareAmount: number
   ): number {
-    if (stakedAmountPeso <= 0 || annualRewardRate <= 0 || marketCapAmount <= 0 || profitShareAmount <= 0) {
+    if (stakedAmountPeso <= 0 || monthlyRewardRate <= 0 || marketCapAmount <= 0 || profitShareAmount <= 0) {
       return 0;
     }
 
@@ -27,10 +27,9 @@ class CryptoEpochRewards {
     }
 
     const profitShareFactor = profitShareAmount / marketCapAmount;
-    const adjustedRewardRate = annualRewardRate * profitShareFactor;
-    const dailyRewardRate = adjustedRewardRate / 365;
+    const adjustedRewardRate = (monthlyRewardRate / 100) * profitShareFactor; // Convert percentage to decimal
 
-    const rewardAmountPeso = stakedAmountPeso * dailyRewardRate * stakeDurationDays;
+    const rewardAmountPeso = (stakedAmountPeso * adjustedRewardRate * stakeDurationDays) / 30;
 
     return rewardAmountPeso;
   }
@@ -73,6 +72,7 @@ class CryptoEpochRewards {
               class="form-control"
             >
           </div>
+
           <div class="form-group">
             <label for="marketCap">Market Cap (PHP)</label>
             <input
@@ -83,6 +83,19 @@ class CryptoEpochRewards {
               placeholder="Enter amount"
               class="form-control"
             >
+          </div>
+
+          
+          <div class="form-group">
+            <label for="monthlyRewardRate">Epoch/Monthly Reward Rate (%):</label>
+            <input
+              type="number"
+              id="monthlyRewardRate"
+              [(ngModel)]="monthlyRewardRate"
+              (ngModelChange)="calculateReward()"
+              class="form-control"
+              placeholder="Enter monthly rate e.g., 1 for 1%"
+              step="0.01">
           </div>
         </div>
         <div class="input-grid">
@@ -192,7 +205,7 @@ class CryptoEpochRewards {
       display: block;
       margin-bottom: 8px;
       color: #f1f1f1;
-      font-weight: 600;
+      font-weight: 500;
     }
 
     .form-control {
@@ -248,13 +261,13 @@ class CryptoEpochRewards {
     }
   `]
 })
-export class App implements OnInit {
+export class App {
   private calculator = new CryptoEpochRewards();
 
   stakedAmount: number = 10000;
   startDate: string = new Date().toISOString().split('T')[0];
   endDate: string = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-  annualRewardRate: number = 10.5; // Default 5% annual rate
+  monthlyRewardRate: number = 10.5;
   profitShare: number = 101591068;
   marketCap: number = 3753480698;
   calculatedReward: number = 0;
@@ -270,7 +283,7 @@ export class App implements OnInit {
         start: new Date(this.startDate),
         finish: new Date(this.endDate)
       },
-      this.annualRewardRate,
+      this.monthlyRewardRate,
       this.marketCap,
       this.profitShare
     );
