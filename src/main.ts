@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 
@@ -6,18 +6,11 @@ class CryptoEpochRewards {
   calculateRewardPeso(
     stakedAmountPeso: number,
     stakeDuration: { start: Date; finish: Date },
-    profitShareAmount: number,
-    marketCapAmount: number
+    annualRewardRate: number,
+    marketCapAmount: number,
+    profitShareAmount: number
   ): number {
-    if (stakedAmountPeso <= 0) {
-      return 0;
-    }
-
-    if (profitShareAmount <= 0) {
-      return 0;
-    }
-
-    if (marketCapAmount <= 0) {
+    if (stakedAmountPeso <= 0 || annualRewardRate <= 0 || marketCapAmount <= 0 || profitShareAmount <= 0) {
       return 0;
     }
 
@@ -33,139 +26,235 @@ class CryptoEpochRewards {
       return 0;
     }
 
-    const rewardRatePeso = profitShareAmount / marketCapAmount;
-    const rewardAmountPeso = (stakedAmountPeso * rewardRatePeso * stakeDurationDays);
+    const profitShareFactor = profitShareAmount / marketCapAmount;
+    const adjustedRewardRate = annualRewardRate * profitShareFactor;
+    const dailyRewardRate = adjustedRewardRate / 365;
+
+    const rewardAmountPeso = stakedAmountPeso * dailyRewardRate * stakeDurationDays;
 
     return rewardAmountPeso;
   }
 }
-
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [FormsModule],
   template: `
     <div class="container">
-      <h1>Crypto Rewards Calculator (PHP)</h1>
+      <div class="card">
+        <h1 class="card-title">Crypto Rewards Calculator (PHP)</h1>
 
-      <div class="result">
-        <h2>Calculated Reward: {{ formatReward(calculatedReward) }} PHP</h2>
-      </div>
-
-      <div class="form">
-        <div class="form-group">
-          <label for="stakedAmount">Staked Amount (PHP):</label>
-          <input
-            type="number"
-            id="stakedAmount"
-            [(ngModel)]="stakedAmount"
-            (ngModelChange)="calculateReward()"
-            placeholder="Enter amount in PHP"
-          >
+        <div class="result-card">
+          <p>Calculated Reward:</p>
+          <h2 class="reward-amount">{{ formatReward(calculatedReward) }} PHP</h2>
         </div>
 
-        <div class="form-group">
-          <label for="startDate">Start Date:</label>
-          <input
-            type="date"
-            id="startDate"
-            [(ngModel)]="startDate"
-            (ngModelChange)="calculateReward()"
-          >
-        </div>
+        <div class="input-grid">
+          <div class="form-group">
+            <label for="stakedAmount">Staked Amount (PHP)</label>
+            <input
+              type="number"
+              id="stakedAmount"
+              [(ngModel)]="stakedAmount"
+              (ngModelChange)="calculateReward()"
+              placeholder="Enter amount"
+              class="form-control"
+            >
+          </div>
 
-        <div class="form-group">
-          <label for="endDate">End Date:</label>
-          <input
-            type="date"
-            id="endDate"
-            [(ngModel)]="endDate"
-            (ngModelChange)="calculateReward()"
-          >
+          <div class="form-group">
+            <label for="profitShare">Profit Share (PHP)</label>
+            <input
+              type="number"
+              id="profitShare"
+              [(ngModel)]="profitShare"
+              (ngModelChange)="calculateReward()"
+              placeholder="Enter amount"
+              class="form-control"
+            >
+          </div>
+          <div class="form-group">
+            <label for="marketCap">Market Cap (PHP)</label>
+            <input
+              type="number"
+              id="marketCap"
+              [(ngModel)]="marketCap"
+              (ngModelChange)="calculateReward()"
+              placeholder="Enter amount"
+              class="form-control"
+            >
+          </div>
         </div>
+        <div class="input-grid">
+          <div class="form-group">
+            <label for="startDate">Start Date</label>
+            <input
+              type="date"
+              id="startDate"
+              [(ngModel)]="startDate"
+              (ngModelChange)="calculateReward()"
+              class="form-control date-input"
+            >
+          </div>
 
-        <div class="form-group">
-          <label for="profitShare">Profit Share Amount (PHP):</label>
-          <input
-            type="number"
-            id="profitShare"
-            [(ngModel)]="profitShare"
-            (ngModelChange)="calculateReward()"
-            placeholder="Enter amount in PHP"
-          >
-        </div>
-
-        <div class="form-group">
-          <label for="marketCap">Market Cap (PHP):</label>
-          <input
-            type="number"
-            id="marketCap"
-            [(ngModel)]="marketCap"
-            (ngModelChange)="calculateReward()"
-            placeholder="Enter amount in PHP"
-          >
+          <div class="form-group">
+            <label for="endDate">End Date</label>
+            <input
+              type="date"
+              id="endDate"
+              [(ngModel)]="endDate"
+              (ngModelChange)="calculateReward()"
+              class="form-control date-input"
+            >
+          </div>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-      font-family: Arial, sans-serif;
+    /* Apply font globally for consistency */
+    :host {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
     }
 
-    .result {
-      background-color: #f0f0f0;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #f0f2f5;
+      font-family: 'Helvetica Neue', Arial, sans-serif; 
+      color: #333;
+      line-height: 1.6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
       padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .card {
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+      padding: 40px;
       text-align: center;
     }
 
-    .result h2 {
-      margin: 0;
-      color: #333;
+    .card-title {
+      color: #2c3e50;
+      margin-bottom: 20px;
+      font-size: 2.1rem;
+        font-weight: bold; 
+
     }
 
-    .form {
-      background-color: #fff;
+    .result-card {
+      background-color: #8f48d2;
       padding: 20px;
       border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 25px;
+      border: 1px solid #cce5ff;
+    }
+
+    .result-card p {
+      color: #f1f1f1;
+      margin-bottom: 5px;
+      font-size: 0.9em;
+    }
+
+    .reward-amount {
+      color: #f1f1f1;
+      font-size: 2rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 16px;
+      text-align: left;
     }
 
     .form-group {
-      margin-bottom: 15px;
+      margin-bottom: 0;
     }
 
     label {
       display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 600;
     }
 
-    input {
+    .form-control {
       width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 16px;
+      padding: 12px;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.2s ease-in-out;
     }
 
-    input:focus {
+    .form-control:focus {
       outline: none;
-      border-color: #007bff;
+      border-color: #80bdff;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    ::placeholder {
+      color: #999;
+    }
+
+    /* Hide arrows for number inputs */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    .date-input {
+      position: relative;
+    }
+
+    .date-input::-webkit-calendar-picker-indicator {
+      background: transparent;
+      bottom: 0;
+      color: #8f48d2; 
+      cursor: pointer;
+      height: auto;
+      left: 0;
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: auto;
+    }
+
+    .date-input::-moz-date-button {
+       color: #8f48d2;
     }
   `]
 })
-export class App {
+export class App implements OnInit {
   private calculator = new CryptoEpochRewards();
 
   stakedAmount: number = 10000;
   startDate: string = new Date().toISOString().split('T')[0];
-  endDate: string = new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0];
+  endDate: string = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  annualRewardRate: number = 10.5; // Default 5% annual rate
   profitShare: number = 101591068;
   marketCap: number = 3753480698;
   calculatedReward: number = 0;
@@ -181,8 +270,9 @@ export class App {
         start: new Date(this.startDate),
         finish: new Date(this.endDate)
       },
-      this.profitShare,
-      this.marketCap
+      this.annualRewardRate,
+      this.marketCap,
+      this.profitShare
     );
   }
 
